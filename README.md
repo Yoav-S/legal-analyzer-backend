@@ -1,50 +1,128 @@
-# legal-analyzer-backend
+# Legal Analyzer Backend
 
-**legal-analyzer-backend** is the core backend service for the Legal Analyzer Micro-SaaS platform. Built with Python and FastAPI, it handles all data processing, AI integration, and API services consumed by the frontend.
+FastAPI backend for AI-powered legal document analysis.
 
----
+## 🏗️ Architecture
 
-## **Purpose**
+- **Framework:** FastAPI 0.109+
+- **Database:** MongoDB (Motor async driver)
+- **Queue:** Celery + Redis
+- **Storage:** AWS S3 / Cloudflare R2
+- **Auth:** Supabase JWT
+- **AI:** OpenAI GPT-4 + Anthropic Claude
+- **Payments:** Stripe
+- **Email:** SendGrid
 
-This repository is responsible for:
+## 🚀 Quick Start
 
-- **User Management** – Authentication, authorization, and account management.  
-- **Document Processing** – Receiving uploaded legal documents, parsing text, and preparing data for AI analysis.  
-- **AI Integration** – Sending document chunks to AI models (OpenAI, Anthropic, etc.) and retrieving structured analysis.  
-- **Risk Scoring and Reporting** – Generating risk assessments, summaries, and structured reports for users.  
-- **API Services** – Exposing endpoints consumed by the frontend and other integrations.  
-- **Payment Integration** – Handling subscription or pay-per-use models with Stripe.  
+### Prerequisites
 
----
+- Python 3.11+
+- MongoDB (local or Atlas)
+- Redis (for Celery)
 
-## **Repository Overview**
+### Installation
 
-The backend is structured to provide:
+```bash
+# Clone repository
+git clone <repo-url>
+cd legal-analyzer-backend
 
-- Reliable and secure API endpoints  
-- Scalable processing for documents and AI workloads  
-- Clear separation of concerns between services (auth, processing, reporting)  
-- Easy integration with frontend, infrastructure, and scripts  
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
----
+# Install dependencies
+pip install -r requirements.txt
 
-## **Getting Started**
+# Configure environment
+cp .env.example .env
+# Edit .env with your actual keys
 
-1. Clone the repository.  
-2. Install dependencies from `requirements.txt` or `pyproject.toml`.  
-3. Configure environment variables for database, AI APIs, and Stripe.  
-4. Run the backend locally with FastAPI or via Docker for containerized development.  
-5. Use the API documentation to interact with endpoints during development and testing.  
+# Run development server
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
----
+# In another terminal, run Celery worker
+celery -A app.queues.worker worker --loglevel=info
+```
 
-## **Contributing**
+## 📚 API Documentation
 
-- Follow Python best practices and code style guidelines  
-- Document new endpoints and services in API docs  
-- Test features thoroughly before merging  
-- Keep AI prompts and processing logic maintainable and versioned  
+Once running, visit:
+- **Swagger UI:** http://localhost:8000/docs
+- **ReDoc:** http://localhost:8000/redoc
 
----
+## 🧪 Testing
 
-**Legal Analyzer Backend** — The engine of the platform, managing document processing, AI analysis, API endpoints, and user data securely and efficiently.
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=app --cov-report=html
+```
+
+## 📁 Project Structure
+
+```
+app/
+├── main.py              # FastAPI app entry point
+├── config.py            # Configuration
+├── dependencies.py      # Dependency injection
+├── routes/              # API endpoints
+├── models/              # MongoDB models
+├── services/            # Business logic services
+├── queues/              # Celery tasks
+├── middleware/          # Middleware (rate limiting, etc.)
+├── utils/               # Utilities
+└── schemas/             # Pydantic schemas
+```
+
+## 🔗 Related Repositories
+
+- **Frontend:** [legal-analyzer-frontend](../legal-analyzer-frontend)
+- **Infrastructure:** [legal-analyzer-infra](../legal-analyzer-infra)
+- **Scripts:** [legal-analyzer-scripts](../legal-analyzer-scripts)
+- **Documentation:** [legal-analyzer-docs](../legal-analyzer-docs)
+
+## 📝 Environment Variables
+
+See `.env.example` for all required variables.
+
+Key variables:
+- `MONGODB_URL` - MongoDB connection string
+- `SUPABASE_URL` & `SUPABASE_ANON_KEY` - Supabase credentials
+- `OPENAI_API_KEY` - OpenAI API key
+- `STRIPE_SECRET_KEY` - Stripe secret key
+- `AWS_ACCESS_KEY_ID` & `AWS_SECRET_ACCESS_KEY` - S3 credentials
+- `REDIS_URL` - Redis connection for Celery
+
+## 🐳 Docker
+
+For production deployment, see [legal-analyzer-infra](../legal-analyzer-infra).
+
+For local development:
+```bash
+docker build -t legal-analyzer-backend .
+docker run -p 8000:8000 --env-file .env legal-analyzer-backend
+```
+
+## 📖 Documentation
+
+Full documentation available in [legal-analyzer-docs](../legal-analyzer-docs):
+- API Reference
+- Deployment Guide
+- Architecture Overview
+- Development Setup
+
+## 🤝 Contributing
+
+1. Create feature branch
+2. Make changes
+3. Write tests
+4. Submit pull request
+
+## 📄 License
+
+Proprietary and confidential.
+
