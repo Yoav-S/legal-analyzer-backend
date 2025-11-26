@@ -1,7 +1,7 @@
 """
 Security utilities for authentication and authorization.
 """
-import jwt
+from jose import jwt, JWTError
 from typing import Optional, Dict, Any
 from datetime import datetime, timedelta
 
@@ -13,33 +13,44 @@ def decode_jwt_token(token: str) -> Dict[str, Any]:
     """
     Decode and verify JWT token from Supabase.
     
+    This function verifies the JWT token locally using the Supabase JWT secret.
+    No external API calls are made - verification happens on the backend.
+    
     Args:
-        token: JWT token string
+        token: JWT token string (with or without 'Bearer ' prefix)
         
     Returns:
-        Decoded token payload
+        Decoded token payload containing:
+        - sub: User ID (Supabase UUID)
+        - email: User email
+        - role: User role (typically "authenticated")
+        - exp: Token expiration timestamp
         
     Raises:
-        AuthenticationError: If token is invalid
+        AuthenticationError: If token is invalid, expired, or missing
     """
     try:
         # Remove 'Bearer ' prefix if present
         if token.startswith("Bearer "):
             token = token[7:]
         
-        # Decode token (Supabase uses HS256)
+        if not token:
+            raise AuthenticationError("Token is empty")
+        
+        # Decode and verify token (Supabase uses HS256)
         payload = jwt.decode(
             token,
             settings.SUPABASE_JWT_SECRET,
             algorithms=[settings.ALGORITHM],
-            options={"verify_signature": True},
         )
         
         return payload
     except jwt.ExpiredSignatureError:
         raise AuthenticationError("Token has expired")
-    except jwt.InvalidTokenError as e:
+    except jwt.JWTError as e:
         raise AuthenticationError(f"Invalid token: {str(e)}")
+    except Exception as e:
+        raise AuthenticationError(f"Token verification failed: {str(e)}")
 
 
 def get_user_id_from_token(token: str) -> str:
@@ -47,10 +58,13 @@ def get_user_id_from_token(token: str) -> str:
     Extract user ID from JWT token.
     
     Args:
-        token: JWT token string
+        token: JWT token string (with or without 'Bearer ' prefix)
         
     Returns:
-        User ID (Supabase UUID)
+        User ID (Supabase UUID from 'sub' claim)
+        
+    Raises:
+        AuthenticationError: If token is invalid or missing user ID
     """
     payload = decode_jwt_token(token)
     user_id = payload.get("sub") or payload.get("user_id")
@@ -59,6 +73,21 @@ def get_user_id_from_token(token: str) -> str:
         raise AuthenticationError("Token missing user ID")
     
     return user_id
+
+
+def get_token_payload(token: str) -> Dict[str, Any]:
+    """
+    Get full token payload with all claims.
+    
+    This is a convenience function that returns the complete decoded token payload.
+    
+    Args:
+        token: JWT token string (with or without 'Bearer ' prefix)
+        
+    Returns:
+        Complete token payload dictionary with all claims
+    """
+    return decode_jwt_token(token)
 
 
 def validate_file_type(filename: str) -> bool:
