@@ -4,9 +4,10 @@ Authentication endpoints.
 from fastapi import APIRouter, Depends, Header
 from typing import Optional
 
-from app.dependencies import get_current_user, get_current_user_id, get_supabase_service
+from app.dependencies import get_current_user, get_current_user_id
 from app.models.user import User
 from app.utils.errors import AuthenticationError
+from app.utils.security import decode_jwt_token
 
 router = APIRouter()
 
@@ -14,28 +15,42 @@ router = APIRouter()
 @router.post("/verify-token")
 async def verify_token(
     authorization: Optional[str] = Header(None),
-    supabase: Depends = Depends(get_supabase_service),
 ):
     """
-    Verify Supabase JWT token.
+    Verify Supabase JWT token locally.
     
+    This endpoint verifies the JWT token on the backend without making
+    external API calls to Supabase. It uses the SUPABASE_JWT_SECRET
+    to verify the token signature and expiration.
+    
+    Args:
+        authorization: Authorization header with Bearer token
+        
     Returns:
-        User information if token is valid
+        Token payload information including:
+        - user_id: Supabase user UUID (from 'sub' claim)
+        - email: User email
+        - role: User role (typically "authenticated")
+        - valid: Always True if token is valid
+        
+    Raises:
+        AuthenticationError: If token is missing, invalid, or expired
     """
     if not authorization:
         raise AuthenticationError("Missing authorization header")
     
-    # Remove 'Bearer ' prefix
-    token = authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else authorization
+    # Verify token locally using JWT secret (no external API call)
+    payload = decode_jwt_token(authorization)
     
-    # Verify with Supabase
-    user_data = await supabase.verify_token(token)
-    if not user_data:
-        raise AuthenticationError("Invalid token")
+    # Extract user information from token payload
+    user_id = payload.get("sub") or payload.get("user_id")
+    email = payload.get("email")
+    role = payload.get("role", "authenticated")
     
     return {
-        "user_id": user_data.get("id"),
-        "email": user_data.get("email"),
+        "user_id": user_id,
+        "email": email,
+        "role": role,
         "valid": True,
     }
 
