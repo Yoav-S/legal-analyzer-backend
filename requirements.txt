@@ -11,7 +11,7 @@ pymongo==4.6.1
 
 # Authentication
 python-jose[cryptography]==3.3.0
-python-jwt==4.0.1
+python-jwt==4.1.0
 httpx==0.26.0  # For Supabase API calls
 
 # File Processing
