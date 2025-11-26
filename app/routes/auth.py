@@ -77,4 +77,3 @@ async def get_me(
         "created_at": user.created_at.isoformat(),
         "last_login": user.last_login.isoformat() if user.last_login else None,
     }
-
