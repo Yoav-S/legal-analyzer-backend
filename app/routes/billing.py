@@ -1,6 +1,7 @@
 """
 Billing and subscription endpoints.
 """
+import stripe  # type: ignore
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional
@@ -33,7 +34,7 @@ async def get_plans():
             {
                 "id": "starter",
                 "name": "Starter",
-                "price": 29,
+                "price": 0,
                 "currency": "USD",
                 "interval": "month",
                 "document_limit": 20,
@@ -42,7 +43,7 @@ async def get_plans():
             {
                 "id": "professional",
                 "name": "Professional",
-                "price": 79,
+                "price": 29,
                 "currency": "USD",
                 "interval": "month",
                 "document_limit": 100,
@@ -51,7 +52,7 @@ async def get_plans():
             {
                 "id": "enterprise",
                 "name": "Enterprise",
-                "price": 0,  # Custom pricing
+                "price": 149,
                 "currency": "USD",
                 "interval": "month",
                 "document_limit": -1,  # Unlimited
@@ -74,10 +75,15 @@ async def create_subscription(
     try:
         if existing_sub and existing_sub.is_active():
             # Update existing subscription
-            import stripe
+            subscription = stripe.Subscription.retrieve(existing_sub.stripe_subscription_id)
+            subscription_item_id = subscription["items"]["data"][0].id
+            
             stripe.Subscription.modify(
                 existing_sub.stripe_subscription_id,
-                items=[{"id": existing_sub.stripe_subscription_id, "price": stripe_service.PLAN_PRICE_IDS[request.plan]}],
+                items=[{
+                    "id": subscription_item_id,
+                    "price": stripe_service.PLAN_PRICE_IDS[request.plan]
+                }],
             )
             existing_sub.plan = request.plan
             await existing_sub.save(db)
