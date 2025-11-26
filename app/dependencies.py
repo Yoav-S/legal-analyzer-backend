@@ -43,11 +43,16 @@ async def get_current_user_id(
     """
     Extract and verify user ID from JWT token in Authorization header.
     
+    This dependency is used by protected endpoints to:
+    1. Extract the JWT token from the Authorization header
+    2. Verify the token locally using SUPABASE_JWT_SECRET
+    3. Extract the user_id (sub) from the token payload
+    
     Args:
         authorization: Authorization header value (Bearer token)
         
     Returns:
-        User ID (Supabase UUID)
+        User ID (Supabase UUID) extracted from token's 'sub' claim
         
     Raises:
         AuthenticationError: If token is missing or invalid
@@ -58,6 +63,9 @@ async def get_current_user_id(
     try:
         user_id = get_user_id_from_token(authorization)
         return user_id
+    except AuthenticationError:
+        # Re-raise AuthenticationError as-is
+        raise
     except Exception as e:
         raise AuthenticationError(f"Invalid token: {str(e)}")
 
