@@ -83,7 +83,7 @@ ENV PATH=/root/.local/bin:$PATH
 # Install critical dependencies to ensure they're available
 # Must be after PATH is set and packages are copied
 RUN pip install --no-cache-dir --user email-validator==2.1.0 tiktoken==0.5.2 && \
-    python -c "import email_validator; import tiktoken; print(f'email-validator {email_validator.__version__} installed'); print(f'tiktoken {tiktoken.__version__} installed')" || \
+    python -c "import email_validator; import tiktoken; print(f'email-validator {email_validator.__version__} installed'); tiktoken.encoding_for_model('gpt-4'); print('tiktoken installed and functional')" || \
     (echo "ERROR: Failed to install critical dependencies" && exit 1)
 
 # Create necessary directories
@@ -99,7 +99,8 @@ import email_validator; \
 import tiktoken; \
 from pydantic import EmailStr; \
 print('✅ EMAIL VALIDATOR OK:', email_validator.__version__); \
-print('✅ TIKTOKEN OK:', tiktoken.__version__); \
+tiktoken.encoding_for_model('gpt-4'); \
+print('✅ TIKTOKEN OK: installed and functional'); \
 print('✅ Pydantic EmailStr import test passed'); \
 print('✅ All critical dependencies verified')" || \
     (echo "❌ ERROR: Critical dependencies are not importable. This indicates a Docker cache issue." && \
