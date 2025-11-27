@@ -26,6 +26,7 @@ pdf2image==1.16.3
 # AI Integration
 openai==1.12.0
 anthropic==0.18.1
+tiktoken==0.6.0
 
 # Queue & Workers
 celery==5.3.4
