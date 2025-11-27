@@ -80,11 +80,11 @@ COPY --from=builder /app/tests ./tests
 # Ensure scripts are executable and add to PATH
 ENV PATH=/root/.local/bin:$PATH
 
-# Install email-validator to ensure it's available (Pydantic requirement)
+# Install critical dependencies to ensure they're available
 # Must be after PATH is set and packages are copied
-RUN pip install --no-cache-dir --user email-validator==2.1.0 && \
-    python -c "import email_validator; print(f'email-validator {email_validator.__version__} installed successfully')" || \
-    (echo "ERROR: Failed to install email-validator" && exit 1)
+RUN pip install --no-cache-dir --user email-validator==2.1.0 tiktoken==0.5.2 && \
+    python -c "import email_validator; import tiktoken; print(f'email-validator {email_validator.__version__} installed'); print(f'tiktoken {tiktoken.__version__} installed')" || \
+    (echo "ERROR: Failed to install critical dependencies" && exit 1)
 
 # Create necessary directories
 RUN mkdir -p logs reports
@@ -92,10 +92,17 @@ RUN mkdir -p logs reports
 # Expose port
 EXPOSE 8000
 
-# Final verification: Ensure email-validator is importable (catches cache issues)
-# This will fail the build if email-validator is missing, preventing runtime crashes
-RUN python -c "import email_validator; from pydantic import EmailStr; print('✅ EMAIL VALIDATOR OK:', email_validator.__version__); print('✅ Pydantic EmailStr import test passed')" || \
-    (echo "❌ ERROR: email-validator is not importable. This indicates a Docker cache issue." && \
+# Final verification: Ensure critical dependencies are importable (catches cache issues)
+# This will fail the build if dependencies are missing, preventing runtime crashes
+RUN python -c "\
+import email_validator; \
+import tiktoken; \
+from pydantic import EmailStr; \
+print('✅ EMAIL VALIDATOR OK:', email_validator.__version__); \
+print('✅ TIKTOKEN OK:', tiktoken.__version__); \
+print('✅ Pydantic EmailStr import test passed'); \
+print('✅ All critical dependencies verified')" || \
+    (echo "❌ ERROR: Critical dependencies are not importable. This indicates a Docker cache issue." && \
      echo "   Solution: Rebuild with --no-cache flag" && \
      exit 1)
 
