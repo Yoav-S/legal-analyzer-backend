@@ -72,7 +72,7 @@ class Analysis(BaseModel):
     timeline: List[Dict[str, Any]] = Field(default_factory=list)
     
     # Metadata
-    ai_model_used: str = Field(..., description="AI model used: gpt-4, claude-3, etc.")
+    ai_model_used: str = Field(..., description="AI model used: gpt-5.1, gpt-4, claude-3, etc.")
     tokens_used: int = Field(default=0, description="Total tokens consumed")
     processing_time: int = Field(default=0, description="Processing time in seconds")
     cost_estimate: float = Field(default=0.0, description="Estimated cost in USD")
@@ -88,7 +88,7 @@ class Analysis(BaseModel):
                 "summary": "This employment agreement...",
                 "parties": [{"name": "Company A", "role": "Employer"}],
                 "risks": [{"severity": "high", "title": "Missing indemnification"}],
-                "ai_model_used": "gpt-4-turbo-preview",
+                "ai_model_used": "gpt-5.1",
                 "tokens_used": 15000,
             }
         }
