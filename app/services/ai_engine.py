@@ -81,7 +81,7 @@ class AIEngine:
                     {"role": "user", "content": prompt},
                 ],
                 temperature=self.temperature,
-                response_format={"type": "json_object"} if "gpt-4" in model else None,
+                response_format={"type": "json_object"} if "gpt-4" in model or "gpt-5" in model else None,
             )
             
             content = response.choices[0].message.content
