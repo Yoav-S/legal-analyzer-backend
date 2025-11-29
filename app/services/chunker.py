@@ -16,11 +16,16 @@ class DocumentChunker:
     def __init__(self, max_tokens: int = None):
         self.max_tokens = max_tokens or settings.MAX_TOKENS_PER_CHUNK
         # Use tiktoken for accurate token counting
+        # Try GPT-5 first (if available), fallback to GPT-4, then to base encoding
         try:
-            self.encoding = tiktoken.encoding_for_model("gpt-4")
+            self.encoding = tiktoken.encoding_for_model(settings.DEFAULT_AI_MODEL)
         except:
-            # Fallback encoding
-            self.encoding = tiktoken.get_encoding("cl100k_base")
+            try:
+                # Fallback to GPT-4 encoding (compatible with GPT-5)
+                self.encoding = tiktoken.encoding_for_model("gpt-4")
+            except:
+                # Final fallback to base encoding
+                self.encoding = tiktoken.get_encoding("cl100k_base")
     
     def chunk_text(self, text: str, overlap: int = 200) -> List[dict]:
         """
