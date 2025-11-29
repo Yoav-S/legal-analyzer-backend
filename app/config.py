@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     # AI APIs
     OPENAI_API_KEY: str
     ANTHROPIC_API_KEY: Optional[str] = None
-    DEFAULT_AI_MODEL: str = "gpt-4-turbo-preview"
+    DEFAULT_AI_MODEL: str = "gpt-5.1"  # Updated to GPT-5.1 (better performance, lower cost than GPT-4)
     AI_FALLBACK_MODEL: str = "claude-3-sonnet-20240229"
     MAX_TOKENS_PER_CHUNK: int = 8000
     AI_TEMPERATURE: float = 0.3
