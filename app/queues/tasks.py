@@ -152,8 +152,11 @@ async def _process_document_analysis_async(document_id: str, user_id: str, task_
         
         # Estimate cost (rough calculation)
         cost_estimate = 0.0
-        if ai_engine.default_model.startswith("gpt-4"):
-            cost_estimate = (total_tokens / 1000) * 0.03  # Rough estimate
+        if ai_engine.default_model.startswith("gpt-5"):
+            # GPT-5 pricing: $1.25/1M input, $10/1M output tokens (assuming 80% input, 20% output)
+            cost_estimate = (total_tokens / 1000000) * (1.25 * 0.8 + 10.0 * 0.2)  # ~$3.00 per 1M tokens
+        elif ai_engine.default_model.startswith("gpt-4"):
+            cost_estimate = (total_tokens / 1000) * 0.03  # Rough estimate for GPT-4
         elif ai_engine.default_model.startswith("claude-3"):
             cost_estimate = (total_tokens / 1000) * 0.015  # Rough estimate
         
